@@ -25,6 +25,9 @@ class CustomCodecsTest {
 
     static final Codec<Either<String, Integer>> EITHER = CREATOR.getCodec(new TypeToken<Either<String, Integer>>() {})
     static final Codec<Pair<String, Map<String, Float>>> PAIR = CREATOR.getCodec(new TypeToken<Pair<String, Map<String, Float>>>() {})
+    static final Codec<Set<String>> STRING_SET = CREATOR.getCodec(new TypeToken<Set<String>>() {})
+    static final Codec<Vector<Integer>> INT_VECTOR = CREATOR.getCodec(new TypeToken<Vector<Integer>>() {})
+    static final Codec<Stack<Character>> CHAR_STACK = CREATOR.getCodec(new TypeToken<Stack<Character>>() {})
 
     @Test
     void "UUID can be serialized"() {
@@ -98,5 +101,49 @@ class CustomCodecsTest {
                         'first': 'String ftw',
                         'second': ['Key1': 034f]
                 ])
+    }
+
+    @Test
+    void "Set can be deserialized"() {
+        // Sets should be unordered
+        assertThat(STRING_SET.parse(ObjectOps.INSTANCE, ['String1', 'String 2'])).hasValue(['String 2', 'String1'] as Set)
+    }
+
+    @Test
+    void "Set can be serialized"() {
+        assertThat(STRING_SET.encodeStart(ObjectOps.INSTANCE, ['String val 1'] as Set)).hasValue(['String val 1'])
+    }
+
+    @Test
+    void "Vector can be deserialized"() {
+        assertThat(INT_VECTOR.parse(ObjectOps.INSTANCE, [24545, 143]))
+                .hasValue(new Vector<Integer>([24545, 143]))
+    }
+
+    @Test
+    void "Vector can be serialized"() {
+        assertThat(INT_VECTOR.encodeStart(ObjectOps.INSTANCE, new Vector<Integer>((14..500).collect())))
+                .hasValue((14..500).collect())
+    }
+
+    @Test
+    void "Stack can be deserialized"() {
+        assertThat(CHAR_STACK.parse(ObjectOps.INSTANCE, ['a', 'b', 'c', 'd']))
+                .hasValue(new Stack<Character>().tap {
+                    push('a' as char)
+                    push('b' as char)
+                    push('c' as char)
+                    push('d' as char)
+                })
+    }
+
+    @Test
+    void "Stack can be serialized"() {
+        assertThat(CHAR_STACK.encodeStart(ObjectOps.INSTANCE, new Stack<Character>().tap {
+            push('x' as char)
+            push('y' as char)
+            push('z' as char)
+        }))
+                .hasValue(['x', 'y', 'z'])
     }
 }
