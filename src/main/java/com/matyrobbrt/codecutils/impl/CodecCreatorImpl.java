@@ -19,10 +19,13 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Currency;
+import java.util.Deque;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
 import java.util.UUID;
@@ -82,10 +85,14 @@ public class CodecCreatorImpl implements CodecCreator {
 
         typeCache.registerFactories(DefaultCTAFs.FACTORIES);
 
-        creators.register(Set.class, args -> new HashSet<>());
+        creators.register(Set.class, args -> new LinkedHashSet<>());
         creators.register(List.class, args -> new ArrayList<>());
         creators.register(Vector.class, args -> new Vector<>());
         creators.register(Stack.class, args -> new Stack<>());
+
+        creators.register(Queue.class, args -> new LinkedList<>());
+        creators.register(Deque.class, args -> new LinkedList<>());
+
         creators.register(Map.class, args -> new HashMap<>());
     }
 

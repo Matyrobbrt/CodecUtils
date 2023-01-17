@@ -28,6 +28,7 @@ class CustomCodecsTest {
     static final Codec<Set<String>> STRING_SET = CREATOR.getCodec(new TypeToken<Set<String>>() {})
     static final Codec<Vector<Integer>> INT_VECTOR = CREATOR.getCodec(new TypeToken<Vector<Integer>>() {})
     static final Codec<Stack<Character>> CHAR_STACK = CREATOR.getCodec(new TypeToken<Stack<Character>>() {})
+    static final Codec<Queue<String>> STRING_QUEUE = CREATOR.getCodec(new TypeToken<Queue<String>>() {})
 
     @Test
     void "UUID can be serialized"() {
@@ -112,6 +113,16 @@ class CustomCodecsTest {
     @Test
     void "Set can be serialized"() {
         assertThat(STRING_SET.encodeStart(ObjectOps.INSTANCE, ['String val 1'] as Set)).hasValue(['String val 1'])
+    }
+
+    @Test
+    void "Queue can be deserialized"() {
+        assertThat(STRING_QUEUE.parse(ObjectOps.INSTANCE, ['String1', 'String 2'])).hasValue(['String1', 'String 2'] as Queue)
+    }
+
+    @Test
+    void "Queue can be serialized"() {
+        assertThat(STRING_QUEUE.encodeStart(ObjectOps.INSTANCE, ['String val 1'] as Queue)).hasValue(['String val 1'])
     }
 
     @Test
