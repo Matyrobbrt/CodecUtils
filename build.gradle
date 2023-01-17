@@ -1,0 +1,57 @@
+plugins {
+  id 'java'
+  id 'groovy'
+  id 'me.champeau.jmh' version '0.6.8'
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+repositories {
+  maven {
+    url 'https://libraries.minecraft.net/'
+  }
+  mavenCentral()
+}
+
+sourceSets {
+  reflection
+}
+
+configurations {
+  reflectionImplementation.extendsFrom(implementation)
+}
+
+final asmVersion = '9.2'
+
+dependencies {
+  compileOnly sourceSets.reflection.output
+  testRuntimeOnly sourceSets.reflection.output
+
+  implementation 'com.mojang:datafixerupper:5.0.28'
+
+  implementation "org.ow2.asm:asm:$asmVersion"
+  implementation "org.ow2.asm:asm-tree:$asmVersion"
+  implementation "org.ow2.asm:asm-util:$asmVersion"
+  implementation "org.ow2.asm:asm-commons:$asmVersion"
+
+  testImplementation 'org.apache.groovy:groovy:4.0.6'
+  testImplementation 'org.apache.groovy:groovy-json:4.0.6'
+
+  testImplementation 'org.assertj:assertj-core:3.22.0'
+  testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
+
+  compileOnly 'org.jetbrains:annotations:24.0.0'
+  reflectionCompileOnly 'org.jetbrains:annotations:24.0.0'
+}
+
+test {
+  useJUnitPlatform()
+}
+
+tasks.withType(GroovyCompile).configureEach {
+  options.incremental = true
+}
+
+jar {
+  from sourceSets.reflection.output
+}
