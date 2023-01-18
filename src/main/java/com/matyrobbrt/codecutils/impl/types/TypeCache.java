@@ -1,11 +1,10 @@
 package com.matyrobbrt.codecutils.impl.types;
 
 import com.google.gson.reflect.TypeToken;
-import com.matyrobbrt.codecutils.CodecCreator;
-import com.matyrobbrt.codecutils.CodecTypeAdapter;
+import com.matyrobbrt.codecutils.api.CodecCreator;
+import com.matyrobbrt.codecutils.api.CodecTypeAdapter;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,8 +52,8 @@ public class TypeCache {
         return (CodecTypeAdapter<T>) cached;
     }
 
-    public void registerFactories(Collection<? extends CodecTypeAdapter.Factory> factories) {
-        this.factories.addAll(factories);
+    public void registerFactory(CodecTypeAdapter.Factory factory) {
+        this.factories.add(factory);
     }
 
     public <T> void registerAdapter(TypeToken<T> token, CodecTypeAdapter<T> adapter) {

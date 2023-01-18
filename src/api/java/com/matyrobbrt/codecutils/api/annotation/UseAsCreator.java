@@ -1,4 +1,4 @@
-package com.matyrobbrt.codecutils.annotation;
+package com.matyrobbrt.codecutils.api.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

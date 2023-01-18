@@ -1,7 +1,7 @@
 package com.matyrobbrt.codecutils.impl.types;
 
-import com.matyrobbrt.codecutils.annotation.UseAsCreator;
-import com.matyrobbrt.codecutils.annotation.WithCreator;
+import com.matyrobbrt.codecutils.api.annotation.UseAsCreator;
+import com.matyrobbrt.codecutils.api.annotation.WithCreator;
 import com.matyrobbrt.codecutils.invoke.Reflection;
 import com.matyrobbrt.codecutils.invoke.internal.ObjectCreatorMetafactory;
 import com.matyrobbrt.codecutils.invoke.ObjectCreator;

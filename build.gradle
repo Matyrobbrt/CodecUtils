@@ -15,9 +15,13 @@ repositories {
 
 sourceSets {
   reflection
+  api {
+    compileClasspath += reflection.output
+  }
 }
 
 configurations {
+  apiImplementation.extendsFrom(implementation)
   reflectionImplementation.extendsFrom(implementation)
 }
 
@@ -26,6 +30,8 @@ final asmVersion = '9.2'
 dependencies {
   compileOnly sourceSets.reflection.output
   testRuntimeOnly sourceSets.reflection.output
+  compileOnly sourceSets.api.output
+  testImplementation sourceSets.api.output
 
   implementation 'com.mojang:datafixerupper:5.0.28'
 
@@ -41,7 +47,11 @@ dependencies {
   testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
 
   compileOnly 'org.jetbrains:annotations:24.0.0'
+  apiCompileOnly 'org.jetbrains:annotations:24.0.0'
   reflectionCompileOnly 'org.jetbrains:annotations:24.0.0'
+
+  compileOnly 'com.google.auto.service:auto-service:1.0.1'
+  annotationProcessor 'com.google.auto.service:auto-service:1.0.1'
 }
 
 test {

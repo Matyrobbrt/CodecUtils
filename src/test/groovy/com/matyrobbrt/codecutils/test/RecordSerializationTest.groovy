@@ -1,6 +1,6 @@
 package com.matyrobbrt.codecutils.test
 
-import com.matyrobbrt.codecutils.CodecCreator
+import com.matyrobbrt.codecutils.api.CodecCreator
 import com.matyrobbrt.codecutils.ops.ObjectOps
 import com.mojang.serialization.Codec
 import groovy.transform.CompileStatic

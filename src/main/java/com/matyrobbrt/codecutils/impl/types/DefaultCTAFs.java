@@ -1,14 +1,13 @@
 package com.matyrobbrt.codecutils.impl.types;
 
 import com.google.gson.reflect.TypeToken;
-import com.matyrobbrt.codecutils.CodecCreator;
-import com.matyrobbrt.codecutils.CodecTypeAdapter;
-import com.matyrobbrt.codecutils.CodecTypeAdapter.Factory.Register;
-import com.matyrobbrt.codecutils.annotation.CodecSerialize;
+import com.matyrobbrt.codecutils.api.CodecTypeAdapter;
+import com.matyrobbrt.codecutils.api.CodecTypeAdapter.Factory.Register;
+import com.matyrobbrt.codecutils.api.annotation.CodecSerialize;
 import com.matyrobbrt.codecutils.codecs.CollectionCodec;
+import com.matyrobbrt.codecutils.impl.CodecCreatorInternal;
 import com.matyrobbrt.codecutils.impl.CodecGenerator;
 import com.matyrobbrt.codecutils.invoke.Reflection;
-import com.matyrobbrt.codecutils.ops.ObjectOps;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
@@ -38,32 +37,32 @@ public class DefaultCTAFs {
             .<CodecTypeAdapter.Factory>map(AnnotatedCTAF::method).toList();
 
     @Register(rawType = Collection.class, receiveGenericCodecs = true)
-    public static <T, C extends Collection<T>> Codec<C> collection(CodecCreator creator, TypeToken<C> token, Codec<T> elementCodec) {
+    public static <T, C extends Collection<T>> Codec<C> collection(CodecCreatorInternal creator, TypeToken<C> token, Codec<T> elementCodec) {
         return new CollectionCodec<>(elementCodec, creator.getDefaultCreators().noArgsCreator((Class<C>) token.getRawType()));
     }
 
     @Register(rawType = Either.class, receiveGenericCodecs = true)
-    public static <L, R> Codec<Either<L, R>> either(CodecCreator creator, TypeToken<Either<L, R>> token, Codec<L> left, Codec<R> right) {
+    public static <L, R> Codec<Either<L, R>> either(CodecCreatorInternal creator, TypeToken<Either<L, R>> token, Codec<L> left, Codec<R> right) {
         return Codec.either(left, right);
     }
 
     @Register(rawType = Pair.class, receiveGenericCodecs = true)
-    public static <F, S> Codec<Pair<F, S>> pair(CodecCreator creator, TypeToken<Pair<F, S>> token, Codec<F> first, Codec<S> second) {
+    public static <F, S> Codec<Pair<F, S>> pair(CodecCreatorInternal creator, TypeToken<Pair<F, S>> token, Codec<F> first, Codec<S> second) {
         return Codec.pair(asIsOrField(first, "first"), asIsOrField(second, "second"));
     }
 
     @Register(rawType = AtomicReference.class, receiveGenericCodecs = true)
-    public static <V> Codec<AtomicReference<V>> atomicReference(CodecCreator creator, TypeToken<AtomicReference<V>> token, Codec<V> codec) {
+    public static <V> Codec<AtomicReference<V>> atomicReference(CodecCreatorInternal creator, TypeToken<AtomicReference<V>> token, Codec<V> codec) {
         return codec.xmap(AtomicReference::new, AtomicReference::get);
     }
 
     @Register(rawType = Record.class)
-    public static Codec<?> record(CodecCreator creator, TypeToken<?> token) throws Throwable {
+    public static Codec<?> record(CodecCreatorInternal creator, TypeToken<?> token) throws Throwable {
         return CodecGenerator.generateRecord(creator, token);
     }
 
     @Register(rawType = Enum.class)
-    public static <E extends Enum<E>> Codec<E> enumCodec(CodecCreator creator, TypeToken<E> token) throws IllegalAccessException {
+    public static <E extends Enum<E>> Codec<E> enumCodec(CodecCreatorInternal creator, TypeToken<E> token) throws IllegalAccessException {
         final Map<String, E> nameToVal = new HashMap<>();
         final Map<E, String> valToName = new EnumMap<>((Class<E>) token.getRawType());
         for (final Field field : token.getRawType().getDeclaredFields()) {
@@ -86,7 +85,7 @@ public class DefaultCTAFs {
     }
 
     @Register(rawType = Map.class, receiveGenericCodecs = true)
-    public static <K, V> Codec<Map<K, V>> map(CodecCreator creator, TypeToken<Map<K, V>> token, Codec<K> keyC, Codec<V> valueC) {
+    public static <K, V> Codec<Map<K, V>> map(CodecCreatorInternal creator, TypeToken<Map<K, V>> token, Codec<K> keyC, Codec<V> valueC) {
         if (keyC == Codec.STRING) {
             return Codec.unboundedMap(keyC, valueC);
         }

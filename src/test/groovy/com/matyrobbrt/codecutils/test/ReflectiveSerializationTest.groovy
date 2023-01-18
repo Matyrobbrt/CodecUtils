@@ -1,7 +1,11 @@
 package com.matyrobbrt.codecutils.test
 
-import com.matyrobbrt.codecutils.CodecCreator
-import com.matyrobbrt.codecutils.annotation.*
+import com.matyrobbrt.codecutils.api.CodecCreator
+import com.matyrobbrt.codecutils.api.annotation.CodecSerialize
+import com.matyrobbrt.codecutils.api.annotation.ExcludeFields
+import com.matyrobbrt.codecutils.api.annotation.OrEmpty
+import com.matyrobbrt.codecutils.api.annotation.Range
+import com.matyrobbrt.codecutils.api.annotation.SingleOrList
 import com.matyrobbrt.codecutils.ops.ObjectOps
 import com.mojang.serialization.Codec
 import groovy.transform.CompileStatic

@@ -1,9 +1,9 @@
-package com.matyrobbrt.codecutils.annotation;
+package com.matyrobbrt.codecutils.api.annotation;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
-public @interface AdapterFor {
+public @interface DefaultValueFor {
     String value();
 }

@@ -1,9 +1,8 @@
 package com.matyrobbrt.codecutils.impl;
 
 import com.google.gson.reflect.TypeToken;
-import com.matyrobbrt.codecutils.CodecCreator;
-import com.matyrobbrt.codecutils.annotation.CodecSerialize;
-import com.matyrobbrt.codecutils.annotation.ExcludeFields;
+import com.matyrobbrt.codecutils.api.annotation.CodecSerialize;
+import com.matyrobbrt.codecutils.api.annotation.ExcludeFields;
 import com.matyrobbrt.codecutils.codecs.FieldsCodec;
 import com.matyrobbrt.codecutils.invoke.Reflection;
 import com.mojang.serialization.Codec;
@@ -23,7 +22,7 @@ public class CodecGenerator {
     public static final RecordInstanceCreator.Instantiator.Factory FACTORY = RecordInstanceCreator.Instantiator.ctor();
 
     @SuppressWarnings("unchecked")
-    public static <T> Codec<T> generateRecord(CodecCreator creator, TypeToken<T> recordType) throws Throwable {
+    public static <T> Codec<T> generateRecord(CodecCreatorInternal creator, TypeToken<T> recordType) throws Throwable {
         final List<FieldsCodec.BoundField<T, ?>> fields = new ArrayList<>();
         for (final RecordComponent comp : recordType.getRawType().getRecordComponents()) {
             final FieldDataResolvers.FieldData<?> data = creator.getFieldDataResolvers().resolve(comp, recordType);
@@ -33,7 +32,7 @@ public class CodecGenerator {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> Codec<T> generateClass(CodecCreator creator, TypeToken<T> recordType) throws Throwable {
+    public static <T> Codec<T> generateClass(CodecCreatorInternal creator, TypeToken<T> recordType) throws Throwable {
         final List<FieldsCodec.BoundField<T, ?>> fields = new ArrayList<>();
         final Set<String> toExclude = Arrays.stream(Optional.ofNullable(recordType.getRawType().getAnnotation(ExcludeFields.class))
                 .map(ExcludeFields::value).orElse(new String[0])).collect(Collectors.toSet());

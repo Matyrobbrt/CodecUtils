@@ -1,6 +1,5 @@
 package com.matyrobbrt.codecutils.impl;
 
-import com.matyrobbrt.codecutils.InstanceCreator;
 import com.matyrobbrt.codecutils.codecs.FieldsCodec;
 
 public record AllocatingInstanceCreator<Z>(Allocator allocator, Class<Z> type) implements InstanceCreator<Z> {

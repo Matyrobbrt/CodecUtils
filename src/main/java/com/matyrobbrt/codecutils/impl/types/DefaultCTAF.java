@@ -1,9 +1,9 @@
 package com.matyrobbrt.codecutils.impl.types;
 
 import com.google.gson.reflect.TypeToken;
-import com.matyrobbrt.codecutils.CodecCreator;
-import com.matyrobbrt.codecutils.CodecTypeAdapter;
-import com.matyrobbrt.codecutils.annotation.UseAsAdapter;
+import com.matyrobbrt.codecutils.api.CodecCreator;
+import com.matyrobbrt.codecutils.api.CodecTypeAdapter;
+import com.matyrobbrt.codecutils.api.annotation.UseAsAdapter;
 import com.matyrobbrt.codecutils.invoke.Reflection;
 import com.mojang.serialization.Codec;
 

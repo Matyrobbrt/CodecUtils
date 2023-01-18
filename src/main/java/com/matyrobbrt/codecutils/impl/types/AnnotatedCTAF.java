@@ -2,10 +2,11 @@ package com.matyrobbrt.codecutils.impl.types;
 
 import com.google.common.base.Suppliers;
 import com.google.gson.reflect.TypeToken;
-import com.matyrobbrt.codecutils.CodecCreator;
-import com.matyrobbrt.codecutils.CodecTypeAdapter;
-import com.matyrobbrt.codecutils.invoke.Reflection;
+import com.matyrobbrt.codecutils.api.CodecCreator;
+import com.matyrobbrt.codecutils.api.CodecTypeAdapter;
+import com.matyrobbrt.codecutils.impl.CodecCreatorInternal;
 import com.matyrobbrt.codecutils.invoke.MethodInvoker;
+import com.matyrobbrt.codecutils.invoke.Reflection;
 import com.matyrobbrt.codecutils.invoke.internal.MethodInvokerMetafactory;
 import com.mojang.serialization.Codec;
 
@@ -34,8 +35,8 @@ public record AnnotatedCTAF(Class<?> rawType, Strategy strategy) implements Code
             throw new RuntimeException("Method codec type adapter factories must be static.");
         }
         final Class<?>[] params = method.getParameterTypes();
-        if (params.length < 2 || params[0] != CodecCreator.class || params[1] != TypeToken.class) {
-            throw new RuntimeException("Method codec type adapter factories must have at least 2 arguments: the first a CodecCreator and the second a TypeToken.");
+        if (params.length < 2 || params[0] != CodecCreatorInternal.class || params[1] != TypeToken.class) {
+            throw new RuntimeException("Method codec type adapter factories must have at least 2 arguments: the first a CodecCreatorInternal and the second a TypeToken.");
         }
         if (method.getReturnType() != Codec.class) {
             throw new RuntimeException("Expected Codec return type.");
@@ -62,17 +63,17 @@ public record AnnotatedCTAF(Class<?> rawType, Strategy strategy) implements Code
         if (!this.rawType().isAssignableFrom(rawType)) {
             return null;
         }
-        return strategy.create(creator, typeToken);
+        return strategy.create((CodecCreatorInternal) creator, typeToken);
     }
 
     @SuppressWarnings("unchecked")
     public interface Strategy {
-        <T> CodecTypeAdapter<T> create(CodecCreator creator, TypeToken<T> type);
+        <T> CodecTypeAdapter<T> create(CodecCreatorInternal creator, TypeToken<T> type);
 
         static Strategy direct(MethodInvoker<Void, Codec<?>> invoker) {
             return new Strategy() {
                 @Override
-                public <T> CodecTypeAdapter<T> create(CodecCreator creator, TypeToken<T> type) {
+                public <T> CodecTypeAdapter<T> create(CodecCreatorInternal creator, TypeToken<T> type) {
                     return (CodecTypeAdapter<T>)CodecTypeAdapter.fromCodec(invoker.invoke(null, creator, type));
                 }
             };
@@ -81,7 +82,7 @@ public record AnnotatedCTAF(Class<?> rawType, Strategy strategy) implements Code
         static Strategy generic(MethodInvoker<Void, Codec<?>> invoker, Class<?> rawTarget, int paramAmount) {
             return new Strategy() {
                 @Override
-                public <T> CodecTypeAdapter<T> create(CodecCreator creator, TypeToken<T> type) {
+                public <T> CodecTypeAdapter<T> create(CodecCreatorInternal creator, TypeToken<T> type) {
                     final Object[] args = new Object[2 + paramAmount];
                     args[0] = creator;
                     args[1] = type;

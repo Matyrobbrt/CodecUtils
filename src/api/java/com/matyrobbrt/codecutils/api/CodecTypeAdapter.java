@@ -1,4 +1,4 @@
-package com.matyrobbrt.codecutils;
+package com.matyrobbrt.codecutils.api;
 
 import com.google.gson.reflect.TypeToken;
 import com.mojang.datafixers.util.Pair;

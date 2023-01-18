@@ -1,6 +1,6 @@
 package com.matyrobbrt.codecutils.impl.types;
 
-import com.matyrobbrt.codecutils.CodecTypeAdapter;
+import com.matyrobbrt.codecutils.api.CodecTypeAdapter;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;

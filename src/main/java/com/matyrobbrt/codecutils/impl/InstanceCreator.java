@@ -1,4 +1,4 @@
-package com.matyrobbrt.codecutils;
+package com.matyrobbrt.codecutils.impl;
 
 import com.matyrobbrt.codecutils.codecs.FieldsCodec;
 

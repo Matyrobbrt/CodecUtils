@@ -2,7 +2,7 @@ package com.matyrobbrt.codecutils.codecs;
 
 import com.matyrobbrt.codecutils.invoke.FieldReader;
 import com.matyrobbrt.codecutils.invoke.FieldWriter;
-import com.matyrobbrt.codecutils.InstanceCreator;
+import com.matyrobbrt.codecutils.impl.InstanceCreator;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Decoder;

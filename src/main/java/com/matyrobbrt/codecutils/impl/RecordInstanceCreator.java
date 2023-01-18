@@ -1,6 +1,5 @@
 package com.matyrobbrt.codecutils.impl;
 
-import com.matyrobbrt.codecutils.InstanceCreator;
 import com.matyrobbrt.codecutils.codecs.FieldsCodec;
 import com.matyrobbrt.codecutils.invoke.ObjectCreator;
 import com.matyrobbrt.codecutils.invoke.internal.ObjectCreatorMetafactory;

@@ -1,10 +1,10 @@
 package com.matyrobbrt.codecutils.test
 
 import com.google.gson.reflect.TypeToken
-import com.matyrobbrt.codecutils.CodecCreator
-import com.matyrobbrt.codecutils.CodecTypeAdapter
-import com.matyrobbrt.codecutils.annotation.CodecSerialize
-import com.matyrobbrt.codecutils.annotation.UseAsAdapter
+import com.matyrobbrt.codecutils.api.CodecCreator
+import com.matyrobbrt.codecutils.api.CodecTypeAdapter
+import com.matyrobbrt.codecutils.api.annotation.CodecSerialize
+import com.matyrobbrt.codecutils.api.annotation.UseAsAdapter
 import com.matyrobbrt.codecutils.impl.types.FutureTypeAdapter
 import com.matyrobbrt.codecutils.ops.ObjectOps
 import com.mojang.datafixers.util.Either

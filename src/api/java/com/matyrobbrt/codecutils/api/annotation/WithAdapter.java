@@ -1,6 +1,6 @@
-package com.matyrobbrt.codecutils.annotation;
+package com.matyrobbrt.codecutils.api.annotation;
 
-import com.matyrobbrt.codecutils.CodecTypeAdapter;
+import com.matyrobbrt.codecutils.api.CodecTypeAdapter;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
