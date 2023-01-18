@@ -1,11 +1,13 @@
 package com.matyrobbrt.codecutils.impl;
 
+import com.google.common.base.Suppliers;
 import com.google.gson.internal.$Gson$Types;
 import com.google.gson.reflect.TypeToken;
 import com.matyrobbrt.codecutils.api.CodecCreator;
 import com.matyrobbrt.codecutils.api.CodecTypeAdapter;
 import com.matyrobbrt.codecutils.api.annotation.AdapterFor;
 import com.matyrobbrt.codecutils.api.annotation.CodecSerialize;
+import com.matyrobbrt.codecutils.api.annotation.DefaultValue;
 import com.matyrobbrt.codecutils.api.annotation.DefaultValueFor;
 import com.matyrobbrt.codecutils.api.annotation.OrEmpty;
 import com.matyrobbrt.codecutils.api.annotation.Range;
@@ -40,6 +42,7 @@ public record FieldDataResolvers(
         Map<Class<?>, Map<String, CodecTypeAdapter<?>>> adapterCache
 ) {
     private static final Map<Class<?>, Ranged<?>> RANGED_TYPES = new HashMap<>();
+    private static final Map<Class<?>, Function<DefaultValue, ?>> DEFAULT_VALUES = new HashMap<>();
 
     static {
         addRange(Range::intMin, Range::intMax, Integer.class, int.class);
@@ -49,11 +52,26 @@ public record FieldDataResolvers(
         addRange(Range::floatMin, Range::floatMax, Float.class, float.class);
         addRange(Range::longMin, Range::longMax, Long.class, long.class);
         addRange(Range::shortMin, Range::shortMax, Short.class, short.class);
+
+        addDefault(DefaultValue::stringValue, String.class);
+        addDefault(DefaultValue::intValue, Integer.class, int.class);
+        addDefault(DefaultValue::byteValue, Byte.class, byte.class);
+        addDefault(DefaultValue::charValue, Character.class, char.class);
+        addDefault(DefaultValue::doubleValue, Double.class, double.class);
+        addDefault(DefaultValue::floatValue, Float.class, float.class);
+        addDefault(DefaultValue::longValue, Long.class, long.class);
+        addDefault(DefaultValue::shortValue, Short.class, short.class);
     }
 
     private static <T extends Comparable<T>> void addRange(Ranged<T> getter, Class<T>... classes) {
         for (Class<T> aClass : classes) {
             RANGED_TYPES.put(aClass, getter);
+        }
+    }
+
+    private static <T> void addDefault(Function<DefaultValue, T> fun, Class<T>... classes) {
+        for (Class<T> aClass : classes) {
+            DEFAULT_VALUES.put(aClass, fun);
         }
     }
 
@@ -113,14 +131,16 @@ public record FieldDataResolvers(
             }
         }
 
-        final Optional<VarHandle> defaultValueField = declaringClazz.map(it -> getDefaultValueCache(it).get(name.get()));
+        final Optional<Object> defaultValueAn = fieldType.map(DEFAULT_VALUES::get).flatMap(getter -> Optional.ofNullable(element.getAnnotation(DefaultValue.class)).map(getter));
+        // Annotation takes priority
+        final Optional<VarHandle> defaultValueField = defaultValueAn.isPresent() ? Optional.empty() : declaringClazz.map(it -> getDefaultValueCache(it).get(name.get()));
 
         final boolean allowsEmptyList = fieldType.map(it -> it == List.class).orElse(false) && element.getAnnotation(OrEmpty.class) != null;
         final boolean isOptionalType = fieldType.map(it -> it == Optional.class).orElse(false);
 
-        final boolean isOptional = defaultValueField.isPresent() || allowsEmptyList || isOptionalType || codecSerialize.map(ser -> !ser.required()).orElse(false);
+        final boolean isOptional = defaultValueField.isPresent() || defaultValueAn.isPresent() || allowsEmptyList || isOptionalType || codecSerialize.map(ser -> !ser.required()).orElse(false);
 
-        Optional<Supplier<T>> defValSup = defaultValueField.map(varHandle -> (Supplier<T>) varHandle.get());
+        Optional<Supplier<T>> defValSup = defaultValueAn.isPresent() ? defaultValueAn.map(constVal -> Suppliers.ofInstance((T) constVal)) : defaultValueField.map(varHandle -> (Supplier<T>) varHandle.get());
         if (allowsEmptyList) {
             defValSup = or(defValSup, () -> Optional.of((Supplier) List::of));
         }
