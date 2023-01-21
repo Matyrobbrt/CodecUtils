@@ -29,24 +29,64 @@ import java.util.function.Consumer;
  */
 @ApiStatus.NonExtendable
 public interface CodecCreator {
+    /**
+     * Gets an adapter for the given {@code type}.
+     *
+     * @param type the type to get the adapter for
+     * @param <T>  the adapter type
+     * @return the adapter
+     */
     <T> CodecTypeAdapter<T> getAdapter(TypeToken<T> type);
 
+    /**
+     * Gets an adapter for the given {@code clazz}.
+     *
+     * @param clazz the type to get the adapter for
+     * @param <T>   the adapter type
+     * @return the adapter
+     */
     default <T> CodecTypeAdapter<T> getAdapter(Class<T> clazz) {
         return getAdapter(TypeToken.get(clazz));
     }
 
+    /**
+     * Gets a codec for the given {@code clazz}.
+     *
+     * @param clazz the type to get the codec for
+     * @param <T>   the codec type
+     * @return the codec
+     */
     default <T> Codec<T> getCodec(Class<T> clazz) {
         return getAdapter(clazz).asCodec();
     }
 
+    /**
+     * Gets a codec for the given {@code type}.
+     *
+     * @param type the type to get the codec for
+     * @param <T>  the codec type
+     * @return the codec
+     */
     default <T> Codec<T> getCodec(TypeToken<T> type) {
         return getAdapter(type).asCodec();
     }
 
+    /**
+     * Creates a new {@linkplain CodecCreator}, configured with the {@link CodecCreatorConfiguration#applyBuiltInConfiguration() built-in configuration}.
+     *
+     * @return the creator
+     */
     static CodecCreator create() {
         return create(CodecCreatorConfiguration::applyBuiltInConfiguration);
     }
 
+    /**
+     * Creates a new {@linkplain CodecCreator}, and configures it
+     * with the given {@code consumer}. <br>
+     * <strong>Note:</strong> this method does not apply the {@linkplain CodecCreatorConfiguration#applyBuiltInConfiguration() built-in configuration}.
+     *
+     * @return the creator
+     */
     static CodecCreator create(Consumer<CodecCreatorConfiguration> consumer) {
         return $Factory.INSTANCE.create(consumer);
     }
