@@ -6,6 +6,7 @@ pluginManagement {
 rootProject.name = 'codecutils'
 
 includeMC '1.19.2'
+includeMC '1.19.3'
 
 void includeMC(String mcVersion) {
     include "minecraft-$mcVersion"

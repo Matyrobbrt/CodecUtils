@@ -74,6 +74,9 @@ abstract class FindAllCodecs extends DefaultTask {
             }
         }
         clazz.append('\t}\n').append('}')
-        Files.writeString(outputLocation.asFile.get().toPath(), clazz)
+
+        final path = outputLocation.asFile.get().toPath()
+        Files.createDirectories(path.parent)
+        Files.writeString(path, clazz)
     }
 }
