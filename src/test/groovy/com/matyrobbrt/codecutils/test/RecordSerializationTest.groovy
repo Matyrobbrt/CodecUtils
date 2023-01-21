@@ -1,7 +1,8 @@
 package com.matyrobbrt.codecutils.test
 
 import com.matyrobbrt.codecutils.api.CodecCreator
-import com.matyrobbrt.codecutils.ops.ObjectOps
+import com.matyrobbrt.codecutils.api.annotation.CodecSerialize
+import com.matyrobbrt.codecutils.api.ops.ObjectOps
 import com.mojang.serialization.Codec
 import groovy.transform.CompileStatic
 import groovy.transform.stc.POJO
@@ -64,10 +65,24 @@ class RecordSerializationTest {
         assertOptional(deserialized.error()).isPresent()
     }
 
+    @Test
+    void "can deserialize optional primitive values without defaults"() {
+        final deserialized = WithOptionalPrimitives.CODEC.parse(ObjectOps.INSTANCE, [:])
+        assertThat(deserialized).hasValue(new WithOptionalPrimitives((char)0, 0))
+    }
+
     @POJO
     static record TestRecord(
             String someValue, int anotherValue, List<String> yetAnotherValue
     ) {}
+
+    @POJO
+    static record WithOptionalPrimitives(
+            @CodecSerialize(required = false) char charValue,
+            @CodecSerialize(required = false) double doubleValue
+    ) {
+        static final Codec<WithOptionalPrimitives> CODEC = CREATOR.getCodec(WithOptionalPrimitives)
+    }
 
     private static <T> List<T> listFilledWith(int size, T value) {
         final list = new ArrayList<T>(size)

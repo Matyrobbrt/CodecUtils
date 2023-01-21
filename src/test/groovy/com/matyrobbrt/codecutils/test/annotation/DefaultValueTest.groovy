@@ -2,7 +2,7 @@ package com.matyrobbrt.codecutils.test.annotation
 
 import com.matyrobbrt.codecutils.api.CodecCreator
 import com.matyrobbrt.codecutils.api.annotation.DefaultValue
-import com.matyrobbrt.codecutils.ops.ObjectOps
+import com.matyrobbrt.codecutils.api.ops.ObjectOps
 import com.mojang.serialization.Codec
 import groovy.transform.CompileStatic
 import groovy.transform.stc.POJO

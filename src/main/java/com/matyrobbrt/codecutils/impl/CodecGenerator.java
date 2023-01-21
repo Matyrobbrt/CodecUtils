@@ -1,5 +1,6 @@
 package com.matyrobbrt.codecutils.impl;
 
+import com.google.common.base.Suppliers;
 import com.google.gson.reflect.TypeToken;
 import com.matyrobbrt.codecutils.api.annotation.CodecSerialize;
 import com.matyrobbrt.codecutils.api.annotation.ExcludeFields;
@@ -15,6 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("rawtypes")
@@ -49,9 +51,12 @@ public class CodecGenerator {
     @SuppressWarnings("unchecked")
     private static <T, Z> FieldsCodec.BoundField<T, Z> bind(RecordComponent comp, FieldDataResolvers.FieldData<Z> data) throws Throwable {
         final Codec<Z> codec = (Codec<Z>) data.typeAdapter().asCodec();
+        final Supplier<Z> defaultValue = data.defaultValue() == null ?
+                (FieldDataResolvers.PRIMITIVE_TYPES.contains(comp.getType()) ? Suppliers.ofInstance((Z) FieldDataResolvers.PRIMITIVE_DEFAULTS.get(comp.getType())) : null) :
+                data.defaultValue();
         return new FieldsCodec.BoundField.ForRecordComponent<>(
                 data.name(), comp.getName(),
-                !data.optional(), comp.getType() == Optional.class, data.defaultValue(),
+                !data.optional(), comp.getType() == Optional.class, defaultValue,
                 codec, codec,
                 Reflection.reader(comp)
         );

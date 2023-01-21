@@ -27,11 +27,19 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.RecordComponent;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Queue;
+import java.util.Set;
+import java.util.Stack;
+import java.util.Vector;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -43,6 +51,18 @@ public record FieldDataResolvers(
 ) {
     private static final Map<Class<?>, Ranged<?>> RANGED_TYPES = new HashMap<>();
     private static final Map<Class<?>, Function<DefaultValue, ?>> DEFAULT_VALUES = new HashMap<>();
+    static final Set<Class<?>> PRIMITIVE_TYPES = Set.of(
+            int.class, byte.class, char.class, double.class, float.class, long.class, short.class
+    );
+    static final Map<Class<?>, Object> PRIMITIVE_DEFAULTS = Map.of(
+            int.class, 0,
+            byte.class, (byte) 0,
+            char.class, (char) 0,
+            double.class, 0d,
+            float.class, 0f,
+            long.class, 0l,
+            short.class, (short) 0
+    );
 
     static {
         addRange(Range::intMin, Range::intMax, Integer.class, int.class);
@@ -135,14 +155,31 @@ public record FieldDataResolvers(
         // Annotation takes priority
         final Optional<VarHandle> defaultValueField = defaultValueAn.isPresent() ? Optional.empty() : declaringClazz.map(it -> getDefaultValueCache(it).get(name.get()));
 
-        final boolean allowsEmptyList = fieldType.map(it -> it == List.class).orElse(false) && element.getAnnotation(OrEmpty.class) != null;
+        final boolean allowsEmptyCol = fieldType.map(it -> it == List.class || it == Set.class || it == Map.class || it == Vector.class || it == Stack.class || it == Deque.class || it == Queue.class).orElse(false) && element.getAnnotation(OrEmpty.class) != null;
         final boolean isOptionalType = fieldType.map(it -> it == Optional.class).orElse(false);
 
-        final boolean isOptional = defaultValueField.isPresent() || defaultValueAn.isPresent() || allowsEmptyList || isOptionalType || codecSerialize.map(ser -> !ser.required()).orElse(false);
+        final boolean isOptional = defaultValueField.isPresent() || defaultValueAn.isPresent() || allowsEmptyCol || isOptionalType || codecSerialize.map(ser -> !ser.required()).orElse(false);
 
         Optional<Supplier<T>> defValSup = defaultValueAn.isPresent() ? defaultValueAn.map(constVal -> Suppliers.ofInstance((T) constVal)) : defaultValueField.map(varHandle -> (Supplier<T>) varHandle.get());
-        if (allowsEmptyList) {
-            defValSup = or(defValSup, () -> Optional.of((Supplier) List::of));
+        if (allowsEmptyCol) {
+            final Class<?> ft = fieldType.get();
+
+            final Supplier defSup;
+            if (ft == Set.class) {
+                defSup = Set::of;
+            } else if (ft == Map.class) {
+                defSup = Map::of;
+            } else if (ft == Vector.class) {
+                defSup = Vector::new;
+            } else if (ft == Stack.class) {
+                defSup = Stack::new;
+            } else if (ft == Queue.class || ft == Deque.class) {
+                defSup = LinkedList::new;
+            } else {
+                defSup = List::of;
+            }
+
+            defValSup = or(defValSup, () -> Optional.of(defSup));
         }
 
         return new FieldData<>(name.orElseThrow(), typeAdapter.orElseThrow(), isOptional, defValSup.orElse(null));

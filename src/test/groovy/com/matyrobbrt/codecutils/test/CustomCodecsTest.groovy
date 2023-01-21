@@ -3,7 +3,7 @@ package com.matyrobbrt.codecutils.test
 
 import com.google.gson.reflect.TypeToken
 import com.matyrobbrt.codecutils.api.CodecCreator
-import com.matyrobbrt.codecutils.ops.ObjectOps
+import com.matyrobbrt.codecutils.api.ops.ObjectOps
 import com.mojang.datafixers.util.Either
 import com.mojang.datafixers.util.Pair
 import com.mojang.serialization.Codec

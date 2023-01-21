@@ -6,7 +6,7 @@ import com.matyrobbrt.codecutils.api.CodecTypeAdapter
 import com.matyrobbrt.codecutils.api.annotation.CodecSerialize
 import com.matyrobbrt.codecutils.api.annotation.UseAsAdapter
 import com.matyrobbrt.codecutils.impl.types.FutureTypeAdapter
-import com.matyrobbrt.codecutils.ops.ObjectOps
+import com.matyrobbrt.codecutils.api.ops.ObjectOps
 import com.mojang.datafixers.util.Either
 import com.mojang.serialization.Codec
 import groovy.transform.CompileStatic

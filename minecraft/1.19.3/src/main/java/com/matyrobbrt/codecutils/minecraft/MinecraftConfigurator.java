@@ -10,6 +10,7 @@ import com.matyrobbrt.codecutils.api.CodecTypeAdapter;
 import com.matyrobbrt.codecutils.invoke.Reflection;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.Level;
@@ -26,7 +27,7 @@ import java.util.stream.Collectors;
 @AutoService(CodecCreatorConfigurator.class)
 public class MinecraftConfigurator implements CodecCreatorConfigurator {
     @Override
-    public void apply(CodecCreatorConfiguration configuration) {
+    public void configure(CodecCreatorConfiguration configuration) {
         setupRegistries(configuration);
         FoundCodecs.apply(configuration);
 
@@ -83,6 +84,8 @@ public class MinecraftConfigurator implements CodecCreatorConfigurator {
 
         final Helper helper = new Helper();
         helper.register(new TypeToken<>() {}, Level.RESOURCE_KEY_CODEC);
+
+        configuration.withStringLikeAdapter(TypeToken.get(ResourceLocation.class), CodecTypeAdapter.fromCodec(ResourceLocation.CODEC));
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})

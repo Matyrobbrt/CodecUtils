@@ -18,7 +18,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -81,18 +80,18 @@ record ConfigurationImpl(TypeCache cache, DefaultObjectCreators creators, Set<Co
     }
 
     @Override
-    public CodecCreatorConfiguration apply(CodecCreatorConfigurator applier) {
-        if (alreadyApplied.add(applier)) {
-            applier.apply(this);
+    public CodecCreatorConfiguration apply(CodecCreatorConfigurator configurator) {
+        if (alreadyApplied.add(configurator)) {
+            configurator.configure(this);
         }
         return this;
     }
 
     @Override
-    public CodecCreatorConfiguration apply(Class<? extends CodecCreatorConfigurator> applierClass) {
-        return apply(CONFIGURATORS.computeIfAbsent(applierClass, k -> {
+    public CodecCreatorConfiguration apply(Class<? extends CodecCreatorConfigurator> configuratorClass) {
+        return apply(CONFIGURATORS.computeIfAbsent(configuratorClass, k -> {
             try {
-                return Reflection.createInstance(applierClass.getDeclaredConstructor());
+                return Reflection.createInstance(configuratorClass.getDeclaredConstructor());
             } catch (Throwable e) {
                 throw new RuntimeException(e);
             }
@@ -100,8 +99,8 @@ record ConfigurationImpl(TypeCache cache, DefaultObjectCreators creators, Set<Co
     }
 
     @Override
-    public CodecCreatorConfiguration apply(String applierId) {
-        APPLIERS_BY_ID.get().get(applierId).forEach(this::apply);
+    public CodecCreatorConfiguration apply(String configuratorId) {
+        APPLIERS_BY_ID.get().get(configuratorId).forEach(this::apply);
         return this;
     }
 

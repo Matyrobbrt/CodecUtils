@@ -5,15 +5,27 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
+import org.jetbrains.annotations.ApiStatus;
 
 import javax.annotation.Nullable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.function.Function;
 
+/**
+ * Similar to {@link Codec Codecs}, used to serialize/deserialize objects from a {@link DynamicOps}.
+ *
+ * @param <A> the type that this adapter encodes/decodes
+ */
 public interface CodecTypeAdapter<A> {
-
+    /**
+     * @see Codec#encode(Object, DynamicOps, Object)
+     */
     <T> DataResult<T> encode(final A input, final DynamicOps<T> ops, final T prefix);
+
+    /**
+     * @see Codec#decode(DynamicOps, Object)
+     */
     <T> DataResult<Pair<A, T>> decode(final DynamicOps<T> ops, final T input);
 
     default <S> CodecTypeAdapter<S> xmap(final Function<? super A, ? extends S> to, final Function<? super S, ? extends A> from) {
@@ -54,15 +66,35 @@ public interface CodecTypeAdapter<A> {
         return new WrappingCodec<>(codec);
     }
 
+    /**
+     * A factory used to create {@link CodecTypeAdapter CodecTypeAdapters} from a {@link TypeToken}.
+     */
     interface Factory {
+        /**
+         * Create an adapter for the given type.
+         *
+         * @param creator the codec creator
+         * @param type    the type
+         * @param <T>     the type of the adapter
+         * @return a created adapter, or {@code null} if this factory can't create adapters for the given type
+         */
         @Nullable
         <T> CodecTypeAdapter<T> create(CodecCreator creator, TypeToken<T> type);
 
+        /**
+         * Create an adapter serializing to {@link String Strings} for the given type.
+         *
+         * @param creator the codec creator
+         * @param type    the type
+         * @param <T>     the type of the adapter
+         * @return a created adapter, or {@code null} if this factory can't create string adapters for the given type
+         */
         @Nullable
         default <T> CodecTypeAdapter<T> createStringLike(CodecCreator creator, TypeToken<T> type) {
             return null;
         }
 
+        @ApiStatus.Internal
         @Retention(RetentionPolicy.RUNTIME)
         @interface Register {
             Class<?> rawType();
@@ -71,6 +103,9 @@ public interface CodecTypeAdapter<A> {
         }
     }
 
+    /**
+     * A type adapter wrapping a codec.
+     */
     class WrappingCodec<A> implements CodecTypeAdapter<A> {
         protected final Codec<A> codec;
 
@@ -94,6 +129,9 @@ public interface CodecTypeAdapter<A> {
         }
     }
 
+    /**
+     * A codec wrapping a type adapter.
+     */
     record CodecFromAdapter<A>(CodecTypeAdapter<A> adapter) implements Codec<A> {
 
         @Override

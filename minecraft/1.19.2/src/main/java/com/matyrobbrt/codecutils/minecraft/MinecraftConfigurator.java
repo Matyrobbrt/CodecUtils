@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 @AutoService(CodecCreatorConfigurator.class)
 public class MinecraftConfigurator implements CodecCreatorConfigurator {
     @Override
-    public void apply(CodecCreatorConfiguration configuration) {
+    public void configure(CodecCreatorConfiguration configuration) {
         setupRegistries(configuration);
         FoundCodecs.apply(configuration);
 
@@ -92,6 +92,8 @@ public class MinecraftConfigurator implements CodecCreatorConfigurator {
 
         final Helper helper = new Helper();
         helper.register(new TypeToken<>() {}, Level.RESOURCE_KEY_CODEC);
+
+        configuration.withStringLikeAdapter(TypeToken.get(ResourceLocation.class), CodecTypeAdapter.fromCodec(ResourceLocation.CODEC));
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})

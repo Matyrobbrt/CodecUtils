@@ -1,7 +1,7 @@
 package com.matyrobbrt.codecutils.benchmarks;
 
 import com.matyrobbrt.codecutils.api.CodecCreator;
-import com.matyrobbrt.codecutils.ops.ObjectOps;
+import com.matyrobbrt.codecutils.api.ops.ObjectOps;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -26,10 +26,10 @@ import java.util.concurrent.TimeUnit;
 
 @State(Scope.Benchmark)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
-@BenchmarkMode(Mode.All)
+@BenchmarkMode({Mode.AverageTime, Mode.SampleTime})
 public class MojRCBVsRecordCodecs {
 
-    private static final int FORK_COUNT = 2;
+    private static final int FORK_COUNT = 1;
     private static final int WARMUP_COUNT = 2;
     private static final int ITERATION_COUNT = 5;
     private static final int THREAD_COUNT = 2;
@@ -48,12 +48,16 @@ public class MojRCBVsRecordCodecs {
     @Setup
     public void setUp() {
         this.mojRCB = RecordCodecBuilder.create(in -> in.group(
-                Codec.STRING.fieldOf("stringValue").forGetter(RecordObject::stringValue)
+                Codec.STRING.fieldOf("stringValue").forGetter(RecordObject::stringValue),
+                Codec.INT.fieldOf("intValue").forGetter(RecordObject::intValue),
+                Codec.DOUBLE.fieldOf("doubleValue").forGetter(RecordObject::doubleValue)
         ).apply(in, RecordObject::new));
         this.recordCodec = CodecCreator.create().getCodec(RecordObject.class);
 
         this.structure = Map.of(
-                "stringValue", "Some String"
+                "stringValue", "Some String",
+                "intValue", 90,
+                "doubleValue", 14d
         );
     }
 
@@ -75,7 +79,7 @@ public class MojRCBVsRecordCodecs {
         return recordCodec.parse(ObjectOps.INSTANCE, structure).get().orThrow();
     }
 
-    public record RecordObject(String stringValue) {
+    public record RecordObject(String stringValue, int intValue, double doubleValue) {
 
     }
 }

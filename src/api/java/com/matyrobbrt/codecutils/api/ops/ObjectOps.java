@@ -1,4 +1,4 @@
-package com.matyrobbrt.codecutils.ops;
+package com.matyrobbrt.codecutils.api.ops;
 
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
@@ -15,8 +15,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+/**
+ * A {@link DynamicOps} for manipulating Java native objects (Lists, Maps and primitive wrappers).
+ * @see ObjectOps#INSTANCE
+ */
 @SuppressWarnings({"unchecked", "rawtypes"})
-public class ObjectOps implements DynamicOps<Object> {
+public final class ObjectOps implements DynamicOps<Object> {
     public static final ObjectOps INSTANCE = new ObjectOps();
     private ObjectOps() {}
 

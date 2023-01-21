@@ -12,6 +12,7 @@ import com.mojang.serialization.DataResult;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URI;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -38,7 +39,7 @@ import java.util.stream.LongStream;
 @AutoService(CodecCreatorConfigurator.class)
 public class BuiltInConfigurationApplier implements CodecCreatorConfigurator {
     @Override
-    public void apply(CodecCreatorConfiguration configuration) {
+    public void configure(CodecCreatorConfiguration configuration) {
         final Helper helper = new Helper(configuration);
 
         helper.registerAdapter(Codec.STRING, String.class);
@@ -78,6 +79,7 @@ public class BuiltInConfigurationApplier implements CodecCreatorConfigurator {
         helper.registerXmapAdapter(StringBuilder.class, Codec.STRING, StringBuilder::new, StringBuilder::toString);
 
         helper.registerAdapterWithString(URL.class, Codec.STRING.flatXmap(catchingException(URL::new), it -> DataResult.success(it.toExternalForm())));
+        helper.registerAdapterWithString(URI.class, Codec.STRING.flatXmap(catchingException(URI::new), it -> DataResult.success(it.toString())));
         helper.registerXmapAdapter(Currency.class, Codec.STRING, Currency::getInstance, Currency::getCurrencyCode);
 
         DefaultCTAFs.FACTORIES.forEach(configuration::withAdapterFactory);

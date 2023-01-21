@@ -296,7 +296,6 @@ public final class FoundCodecs {
 		configuration.withAdapter(TypeToken.get(net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator.class), CodecTypeAdapter.fromCodec(net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator.CODEC));
 		configuration.withAdapter(TypeToken.get(net.minecraft.world.level.levelgen.structure.placement.StructurePlacement.class), CodecTypeAdapter.fromCodec(net.minecraft.world.level.levelgen.structure.placement.StructurePlacement.CODEC));
 		configuration.withAdapter(TypeToken.get(net.minecraft.world.level.levelgen.structure.templatesystem.PosRuleTest.class), CodecTypeAdapter.fromCodec(net.minecraft.world.level.levelgen.structure.templatesystem.PosRuleTest.CODEC));
-		configuration.withAdapter(TypeToken.get(java.util.UUID.class), CodecTypeAdapter.fromCodec(net.minecraft.core.UUIDUtil.CODEC));
 		configuration.withAdapter(TypeToken.get(net.minecraft.world.level.biome.BiomeGenerationSettings.class), CodecTypeAdapter.fromCodec(net.minecraft.world.level.biome.BiomeGenerationSettings.CODEC.codec()));
 		configuration.withAdapter(TypeToken.get(net.minecraft.world.level.levelgen.feature.stateproviders.NoiseProvider.class), CodecTypeAdapter.fromCodec(net.minecraft.world.level.levelgen.feature.stateproviders.NoiseProvider.CODEC));
 		configuration.withAdapter(TypeToken.get(net.minecraft.core.Vec3i.class), CodecTypeAdapter.fromCodec(net.minecraft.core.Vec3i.CODEC));
