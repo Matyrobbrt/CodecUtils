@@ -1,6 +1,19 @@
+import com.matyrobbrt.codecutils.buildscript.CreateOfficialToIntermediary
+import com.matyrobbrt.codecutils.buildscript.CreateOfficialToSrg
+import com.matyrobbrt.codecutils.buildscript.FindAllCodecs
+import com.matyrobbrt.codecutils.buildscript.RemapJar
+
+buildscript {
+  repositories {
+    maven { url = "https://repo.spongepowered.org/repository/maven-public/" }
+  }
+  dependencies {
+    classpath 'org.spongepowered:vanillagradle:0.2.1-SNAPSHOT'
+  }
+}
 plugins {
-  id 'java'
   id 'groovy'
+  id 'java-library'
   id 'me.champeau.jmh' version '0.6.8'
 }
 
@@ -11,6 +24,10 @@ repositories {
     url 'https://libraries.minecraft.net/'
   }
   mavenCentral()
+  maven {
+    name 'MC Forge'
+    url 'https://maven.minecraftforge.net'
+  }
 }
 
 sourceSets {
@@ -29,10 +46,11 @@ final asmVersion = '9.2'
 
 dependencies {
   compileOnly sourceSets.reflection.output
-  testRuntimeOnly sourceSets.reflection.output
+  testImplementation sourceSets.reflection.output
   compileOnly sourceSets.api.output
   testImplementation sourceSets.api.output
 
+  runtimeOnly 'com.google.code.gson:gson:2.10.1'
   implementation 'com.mojang:datafixerupper:5.0.28'
 
   implementation "org.ow2.asm:asm:$asmVersion"
@@ -52,6 +70,8 @@ dependencies {
 
   compileOnly 'com.google.auto.service:auto-service:1.0.1'
   annotationProcessor 'com.google.auto.service:auto-service:1.0.1'
+
+  implementation 'net.minecraftforge:srgutils:0.4.3'
 }
 
 test {
@@ -63,5 +83,69 @@ tasks.withType(GroovyCompile).configureEach {
 }
 
 jar {
+  from sourceSets.api.output
   from sourceSets.reflection.output
+}
+java.withSourcesJar()
+sourcesJar {
+  from sourceSets.api.allJava
+  from sourceSets.reflection.allJava
+}
+
+subprojects { Project proj ->
+  if (!name.startsWith('minecraft-')) return
+  final mcVersion = name.substring('minecraft-'.length())
+
+  apply plugin: 'java'
+  apply plugin: 'org.spongepowered.gradle.vanilla'
+  apply plugin: com.matyrobbrt.codecutils.buildscript.CUPlugin
+
+  repositories {
+    mavenCentral()
+  }
+
+  dependencies {
+    implementation(rootProject.sourceSets.api.output)
+    implementation(rootProject.sourceSets.reflection.output)
+  }
+
+  minecraft {
+    version(mcVersion)
+  }
+
+  tasks.each {
+    if (it.group == 'build')
+      it.group = 'other'
+  }
+  tasks.jar.group = 'build'
+
+  tasks.register('downloadDeobfToSrg', CreateOfficialToSrg) {
+    minecraftVersion.set(mcVersion)
+    outputMappings.set(file("$buildDir/deobfToSrg.srg"))
+  }
+
+  tasks.register('remapToSrg', RemapJar) {
+    group = 'build'
+    inputFile.set(tasks.jar.archiveFile)
+    mappings.set(downloadDeobfToSrg.outputMappings)
+    outputFile.set(file(tasks.jar.archiveFile.get().asFile.toString().replace('.jar', '-srg.jar')))
+  }
+
+  tasks.register('downloadDeobfToIntermediary', CreateOfficialToIntermediary) {
+    minecraftVersion.set(mcVersion)
+    outputMappings.set(file("$buildDir/deobfToIntermediary.srg"))
+  }
+
+  tasks.register('remapToIntermediary', RemapJar) {
+    group = 'build'
+    inputFile.set(tasks.jar.archiveFile)
+    mappings.set(downloadDeobfToIntermediary.outputMappings)
+    outputFile.set(file(tasks.jar.archiveFile.get().asFile.toString().replace('.jar', '-intermediary.jar')))
+  }
+
+  tasks.register('findCodecFields', FindAllCodecs) {
+    group = 'build'
+    it.outputLocation.set(file('src/main/java/com/matyrobbrt/codecutils/minecraft/FoundCodecs.java'))
+    it.jarToSearch.set(configurations.minecraft.resolve().find { it.name.endsWith("joined-${mcVersion}.jar") })
+  }
 }

@@ -14,6 +14,7 @@ import com.matyrobbrt.codecutils.impl.types.TypeCache;
 import com.matyrobbrt.codecutils.invoke.ObjectCreator;
 import com.matyrobbrt.codecutils.invoke.Reflection;
 import com.mojang.serialization.Codec;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,7 +26,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
-record ConfigurationImpl(TypeCache cache, DefaultObjectCreators creators, Set<CodecCreatorConfigurator> alreadyApplied) implements CodecCreatorConfiguration {
+record ConfigurationImpl(TypeCache cache, DefaultObjectCreators creators, Set<CodecCreatorConfigurator> alreadyApplied, Object2IntMap<CodecTypeAdapter.Factory> priorities) implements CodecCreatorConfiguration {
     private static final Supplier<ListMultimap<String, CodecCreatorConfigurator>> APPLIERS_BY_ID = Suppliers.memoize(() ->
             ServiceLoader.load(CodecCreatorConfigurator.class, CodecCreatorConfigurator.class.getClassLoader()).stream()
                     .map(ServiceLoader.Provider::get)
@@ -35,6 +36,13 @@ record ConfigurationImpl(TypeCache cache, DefaultObjectCreators creators, Set<Co
     @Override
     public CodecCreatorConfiguration withAdapterFactory(CodecTypeAdapter.Factory factory) {
         cache.registerFactory(factory);
+        return this;
+    }
+
+    @Override
+    public CodecCreatorConfiguration withAdapterFactory(CodecTypeAdapter.Factory factory, int priority) {
+        cache.registerFactory(factory);
+        priorities.put(factory, priority);
         return this;
     }
 
@@ -103,8 +111,12 @@ record ConfigurationImpl(TypeCache cache, DefaultObjectCreators creators, Set<Co
     }
 
     @Override
-    public CodecCreatorConfiguration accept(Consumer<CodecCreatorConfiguration> consumer) {
+    public ConfigurationImpl accept(Consumer<CodecCreatorConfiguration> consumer) {
         consumer.accept(this);
         return this;
+    }
+
+    void rebuildFactoryTree() {
+        cache.sortFactories(priorities);
     }
 }

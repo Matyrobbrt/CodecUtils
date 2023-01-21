@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 @CanIgnoreReturnValue
 public interface CodecCreatorConfiguration {
     CodecCreatorConfiguration withAdapterFactory(CodecTypeAdapter.Factory factory);
+    CodecCreatorConfiguration withAdapterFactory(CodecTypeAdapter.Factory factory, int priority);
 
     <A> CodecCreatorConfiguration withAdapter(TypeToken<A> type, CodecTypeAdapter<A> adapter);
     <A> CodecCreatorConfiguration withAdapter(Class<A> type, CodecTypeAdapter<A> adapter);

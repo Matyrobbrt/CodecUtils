@@ -58,6 +58,11 @@ public interface CodecTypeAdapter<A> {
         @Nullable
         <T> CodecTypeAdapter<T> create(CodecCreator creator, TypeToken<T> type);
 
+        @Nullable
+        default <T> CodecTypeAdapter<T> createStringLike(CodecCreator creator, TypeToken<T> type) {
+            return null;
+        }
+
         @Retention(RetentionPolicy.RUNTIME)
         @interface Register {
             Class<?> rawType();

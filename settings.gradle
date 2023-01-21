@@ -1,0 +1,13 @@
+pluginManagement {
+    repositories {
+        maven { url = "https://repo.spongepowered.org/repository/maven-public/" }
+    }
+}
+rootProject.name = 'codecutils'
+
+includeMC '1.19.2'
+
+void includeMC(String mcVersion) {
+    include "minecraft-$mcVersion"
+    project(":minecraft-$mcVersion").projectDir = new File(rootDir, "minecraft/$mcVersion")
+}

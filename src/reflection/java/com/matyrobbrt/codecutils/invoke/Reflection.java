@@ -71,6 +71,10 @@ public class Reflection {
         }
     }
 
+    public static <T> T getStatic(Field field) {
+        return (T) unreflect(field).get();
+    }
+
     public static Object findAndGet(Class<?> clazz, String fieldName) {
         try {
             return unreflect(clazz.getDeclaredField(fieldName)).get();
@@ -192,9 +196,6 @@ public class Reflection {
 
     public static ClassDumper getClassDumper() {
         try {
-            ((Runnable) () -> {
-                final int a = 0;
-            }).run();
             final Class<?> clazz = TRUSTED_LOOKUP.findClass("java.lang.invoke.InnerClassLambdaMetafactory");
             final Field field = clazz.getDeclaredField("dumper");
             final Object dumper = UNSAFE.getObject(UNSAFE.staticFieldBase(field), UNSAFE.staticFieldOffset(field));

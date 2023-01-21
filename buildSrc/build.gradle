@@ -1,0 +1,17 @@
+plugins {
+    id 'groovy'
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name 'MC Forge'
+        url 'https://maven.minecraftforge.net'
+    }
+}
+
+dependencies {
+    implementation 'net.minecraftforge:srgutils:0.4.3'
+    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'org.ow2.asm:asm-commons:9.3'
+}

@@ -7,6 +7,8 @@ import com.matyrobbrt.codecutils.api.CodecCreatorConfiguration;
 import com.matyrobbrt.codecutils.api.CodecTypeAdapter;
 import com.matyrobbrt.codecutils.impl.types.DefaultObjectCreators;
 import com.matyrobbrt.codecutils.impl.types.TypeCache;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -40,7 +42,8 @@ public class CodecCreatorImpl implements CodecCreatorInternal {
 
     public static CodecCreator create(Consumer<CodecCreatorConfiguration> consumer) {
         final CodecCreatorImpl impl = new CodecCreatorImpl();
-        new ConfigurationImpl(impl.typeCache, impl.creators, new HashSet<>()).accept(consumer);
+        new ConfigurationImpl(impl.typeCache, impl.creators, new HashSet<>(), new Object2IntOpenHashMap<>())
+                .accept(consumer).rebuildFactoryTree();
         return impl;
     }
 

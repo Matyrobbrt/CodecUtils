@@ -37,7 +37,7 @@ public class CodecGenerator {
         final Set<String> toExclude = Arrays.stream(Optional.ofNullable(recordType.getRawType().getAnnotation(ExcludeFields.class))
                 .map(ExcludeFields::value).orElse(new String[0])).collect(Collectors.toSet());
         for (final Field field : recordType.getRawType().getDeclaredFields()) {
-            if (Modifier.isStatic(field.getModifiers()) || toExclude.contains(field.getName())) continue;
+            if (Modifier.isStatic(field.getModifiers()) || Modifier.isTransient(field.getModifiers()) || toExclude.contains(field.getName())) continue;
             if (Optional.ofNullable(field.getAnnotation(CodecSerialize.class)).map(CodecSerialize::exclude).orElse(false)) continue;
 
             final FieldDataResolvers.FieldData<?> data = creator.getFieldDataResolvers().resolve(field, recordType);

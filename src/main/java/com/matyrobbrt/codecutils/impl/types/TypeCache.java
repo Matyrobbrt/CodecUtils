@@ -3,8 +3,11 @@ package com.matyrobbrt.codecutils.impl.types;
 import com.google.gson.reflect.TypeToken;
 import com.matyrobbrt.codecutils.api.CodecCreator;
 import com.matyrobbrt.codecutils.api.CodecTypeAdapter;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +19,7 @@ public class TypeCache {
     private final CodecCreator creator;
 
     final Map<TypeToken<?>, CodecTypeAdapter<?>> cachedAdapters = new ConcurrentHashMap<>();
-    private final Map<TypeToken<?>, CodecTypeAdapter<?>> stringLikeAdapters = new HashMap<>();
+    private final Map<TypeToken<?>, CodecTypeAdapter<?>> stringLikeAdapters = new ConcurrentHashMap<>();
     private final List<CodecTypeAdapter.Factory> factories = new CopyOnWriteArrayList<>();
 
     private final FallbackCTAF lastResort = new FallbackCTAF();
@@ -66,7 +69,34 @@ public class TypeCache {
 
     @Nullable
     @SuppressWarnings("unchecked")
-    public <T> CodecTypeAdapter<T> stringLike(TypeToken<T> token) {
-        return (CodecTypeAdapter<T>) stringLikeAdapters.get(token);
+    public <T> CodecTypeAdapter<T> stringLike(TypeToken<T> type) {
+        final CodecTypeAdapter<?> cached = stringLikeAdapters.get(type);
+        if (cached == null) {
+            final FutureTypeAdapter<T> futureTypeAdapter = new FutureTypeAdapter<>(new AtomicReference<>());
+            stringLikeAdapters.put(type, futureTypeAdapter);
+            for (final CodecTypeAdapter.Factory factory : factories) {
+                final CodecTypeAdapter<T> adapter = factory.createStringLike(creator, type);
+                if (adapter != null) {
+                    futureTypeAdapter.adapter().set(adapter);
+                    return futureTypeAdapter;
+                }
+            }
+
+            stringLikeAdapters.remove(type);
+            return null;
+        }
+        return (CodecTypeAdapter<T>) cached;
+    }
+
+    public void sortFactories(Object2IntMap<CodecTypeAdapter.Factory> priorities) {
+        final List<CodecTypeAdapter.Factory> factoryCopy = new ArrayList<>(this.factories);
+        factoryCopy.remove(0); // We need the DefaultCTAF as the last one
+
+        // High priority == first one
+        factoryCopy.sort(Comparator.comparing(fac -> priorities.getOrDefault(fac, 0)).reversed());
+
+        factoryCopy.add(0, new DefaultCTAF(this));
+        this.factories.clear();
+        this.factories.addAll(factoryCopy);
     }
 }
