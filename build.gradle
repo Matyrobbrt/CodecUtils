@@ -14,9 +14,12 @@ buildscript {
 plugins {
   id 'groovy'
   id 'java-library'
+  id 'maven-publish'
   id 'me.champeau.jmh' version '0.6.8'
 }
 
+archivesBaseName = 'codecutils'
+group = 'com.matyrobbrt.codecutils'
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 repositories {
@@ -70,8 +73,6 @@ dependencies {
 
   compileOnly 'com.google.auto.service:auto-service:1.0.1'
   annotationProcessor 'com.google.auto.service:auto-service:1.0.1'
-
-  implementation 'net.minecraftforge:srgutils:0.4.3'
 }
 
 test {
@@ -87,6 +88,11 @@ jar {
   from sourceSets.reflection.output
 }
 java.withSourcesJar()
+java.withJavadocJar()
+javadoc {
+  source sourceSets.api.allJava
+  options.addStringOption('Xdoclint:none', '-quiet')
+}
 sourcesJar {
   from sourceSets.api.allJava
   from sourceSets.reflection.allJava
@@ -96,7 +102,9 @@ subprojects { Project proj ->
   if (!name.startsWith('minecraft-')) return
   final mcVersion = name.substring('minecraft-'.length())
 
+  group = 'com.matyrobbrt.codecutils.minecraft'
   apply plugin: 'java'
+  apply plugin: 'maven-publish'
   apply plugin: 'org.spongepowered.gradle.vanilla'
   apply plugin: com.matyrobbrt.codecutils.buildscript.CUPlugin
 
@@ -131,7 +139,7 @@ subprojects { Project proj ->
     group = 'build'
     inputFile.set(tasks.jar.archiveFile)
     mappings.set(downloadDeobfToSrg.outputMappings)
-    outputFile.set(file(tasks.jar.archiveFile.get().asFile.toString().replace('.jar', '-srg.jar')))
+    outputFile.set(file("$buildDir/libs/srg/cumc-${mcVersion}-${version}.jar"))
   }
 
   tasks.register('downloadDeobfToIntermediary', CreateOfficialToIntermediary) {
@@ -143,12 +151,93 @@ subprojects { Project proj ->
     group = 'build'
     inputFile.set(tasks.jar.archiveFile)
     mappings.set(downloadDeobfToIntermediary.outputMappings)
-    outputFile.set(file(tasks.jar.archiveFile.get().asFile.toString().replace('.jar', '-intermediary.jar')))
+    outputFile.set(file("$buildDir/libs/intermediary/cumc-${mcVersion}-${version}.jar"))
   }
 
   tasks.register('findCodecFields', FindAllCodecs) {
     group = 'build'
     it.outputLocation.set(file('src/main/java/com/matyrobbrt/codecutils/minecraft/FoundCodecs.java'))
     it.jarToSearch.set(configurations.minecraft.resolve().find { it.name.endsWith("joined-${mcVersion}.jar") })
+  }
+
+  jar.manifest.attributes(['Implementation-Version': version, 'FMLModType': 'GameLibrary'])
+
+  publishing {
+    repositories {
+      maven {
+        name = 'Matyrobbrt'
+        url = 'https://maven.matyrobbrt.com/releases'
+        credentials {
+          username = findProperty('matyrobbrtMavenUser') ? matyrobbrtMavenUser : ''
+          password = findProperty('matyrobbrtMavenPassword') ? matyrobbrtMavenPassword : ''
+        }
+      }
+    }
+    publications {
+      srg(MavenPublication) {
+        groupId = 'com.matyrobbrt.codecutils.minecraft.srg'
+        artifactId = "cumc-${mcVersion}"
+        artifacts = [tasks.remapToSrg.outputFile]
+
+        pom(this::configurePom)
+        pom {
+          name = 'CodecUtilsMCSrg'
+        }
+      }
+      intermediary(MavenPublication) {
+        groupId = 'com.matyrobbrt.codecutils.minecraft.intermediary'
+        artifactId = "cumc-${mcVersion}"
+
+        artifacts = [tasks.remapToIntermediary.outputFile]
+
+        pom(this::configurePom)
+        pom {
+          name = 'CodecUtilsMCIntermediary'
+        }
+      }
+    }
+  }
+}
+
+publishing {
+  repositories {
+    maven {
+      name = 'Matyrobbrt'
+      url = 'https://maven.matyrobbrt.com/releases'
+      credentials {
+        username = findProperty('matyrobbrtMavenUser') ? matyrobbrtMavenUser : ''
+        password = findProperty('matyrobbrtMavenPassword') ? matyrobbrtMavenPassword : ''
+      }
+    }
+  }
+  publications {
+    maven(MavenPublication) {
+      from components.java
+      pom(this::configurePom)
+    }
+  }
+}
+
+void configurePom(MavenPom pom) {
+  pom.name = 'CodecUtils'
+  pom.description = 'A Minecraft vanilla-styled chunk claiming mod.'
+  pom.url = 'https://github.com/Matyrobbrt/CodecUtils'
+  pom.licenses {
+    license {
+      name = 'MIT License'
+      url = 'https://www.opensource.org/licenses/mit-license.php'
+    }
+  }
+  pom.developers {
+    developer {
+      id = 'matyrobbrt'
+      name = 'Matyrobbrt'
+      email = 'matyrobbrt@matyrobbrt.com'
+    }
+  }
+  pom.scm {
+    connection = 'scm:git:git:github.com/matyrobbrt/codecutils.git'
+    developerConnection = 'scm:git:ssh://github.com/Matyrobbrt/CodecUtils.git'
+    url = 'https://github.com/Matyrobbrt/CodecUtils'
   }
 }
