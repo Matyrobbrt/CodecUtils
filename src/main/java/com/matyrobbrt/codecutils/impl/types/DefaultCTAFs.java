@@ -17,6 +17,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.MapLike;
 import com.mojang.serialization.RecordBuilder;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
@@ -28,9 +29,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.ToIntFunction;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "unused"})
 public class DefaultCTAFs {
     public static final List<CodecTypeAdapter.Factory> FACTORIES = Arrays.stream(DefaultCTAFs.class.getDeclaredMethods())
             .filter(method -> method.getAnnotation(Register.class) != null)
@@ -107,7 +112,8 @@ public class DefaultCTAFs {
                     consumer.accept(pairs -> {
                         final DataResult<MapLike<T>> mapRES = ops.getMap(pairs);
                         if (mapRES.result().isEmpty()) {
-                            errors.add(mapRES.error().orElseThrow().message()); return;
+                            errors.add(mapRES.error().orElseThrow().message());
+                            return;
                         }
 
                         final MapLike<T> mapR = mapRES.get().orThrow();
@@ -159,5 +165,67 @@ public class DefaultCTAFs {
             }
         }
         return target.fieldOf(fieldName);
+    }
+
+    public static <A, S> CodecTypeAdapter<A> adapter(A[] vals, Class<S> sClazz, Function<S, String> nameGetter) {
+        final Function<String, S> getter;
+        if (vals.length > 16) {
+            final Map<String, S> map = Arrays.stream(vals).map(sClazz::cast)
+                    .collect(Collectors.toMap(nameGetter, Function.identity()));
+            getter = map::get;
+        } else {
+            final S[] array = (S[]) Array.newInstance(sClazz, vals.length);
+            for (int i = 0; i < vals.length; i++) array[i] = (S) vals[i];
+
+            getter = s -> {
+                for (final S res : array) {
+                    if (nameGetter.apply(res).equals(s)) return res;
+                }
+                return null;
+            };
+        }
+
+        final Enum<?>[] values = new Enum[vals.length];
+        for (int i = 0; i < vals.length; i++) {
+            values[i] = (Enum<?>) vals[i];
+        }
+
+        return CodecTypeAdapter.fromCodec(orCompressed(stringResolverCodec(nameGetter, getter).xmap(s -> (A) s, (A t) -> (S) t),
+                DefaultCTAFs.<Enum<?>>idResolverCodec(Enum::ordinal, ($$1x) -> ($$1x >= 0 && $$1x < values.length ? values[$$1x] : null), -1)
+                        .xmap((Enum<?> s) -> (A) s, (A t) -> (Enum<?>) t)));
+    }
+
+    private static <E> Codec<E> stringResolverCodec(Function<E, String> valToName, Function<String, E> nameToVal) {
+        return Codec.STRING.flatXmap((name) -> Optional.ofNullable(nameToVal.apply(name))
+                .map(DataResult::success).orElseGet(() -> DataResult.error("Unknown element name:" + name)),
+                (val) -> Optional.ofNullable(valToName.apply(val)).map(DataResult::success)
+                        .orElseGet(() -> DataResult.error("Element with unknown name: " + val)));
+    }
+
+    private static <E> Codec<E> orCompressed(final Codec<E> normal, final Codec<E> compressed) {
+        return new Codec<>() {
+            @Override
+            public <T> DataResult<T> encode(E val, DynamicOps<T> ops, T prefix) {
+                return ops.compressMaps() ? compressed.encode(val, ops, prefix) : normal.encode(val, ops, prefix);
+            }
+
+            @Override
+            public <T> DataResult<Pair<E, T>> decode(DynamicOps<T> ops, T val) {
+                return ops.compressMaps() ? compressed.decode(ops, val) : normal.decode(ops, val);
+            }
+
+            @Override
+            public String toString() {
+                return normal + " orCompressed " + compressed;
+            }
+        };
+    }
+
+    private static <E> Codec<E> idResolverCodec(ToIntFunction<E> idGetter, IntFunction<E> getter, int defaultIdx) {
+        return Codec.INT.flatXmap((id) -> Optional.ofNullable(getter.apply(id)).map(DataResult::success)
+                .orElseGet(() -> DataResult.error("Unknown element id: " + id)), (val) -> {
+            int idx = idGetter.applyAsInt(val);
+            return idx == defaultIdx ? DataResult.error("Element with unknown id: " + val) : DataResult.success(idx);
+        });
     }
 }

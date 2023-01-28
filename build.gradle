@@ -106,6 +106,7 @@ subprojects { Project proj ->
 
   dependencies {
     implementation(rootProject.sourceSets.api.output)
+    implementation(rootProject.sourceSets.main.output)
     implementation(rootProject.sourceSets.reflection.output)
     compileOnly('com.google.auto.service:auto-service:1.0.1')
     annotationProcessor('com.google.auto.service:auto-service:1.0.1')

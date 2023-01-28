@@ -11,7 +11,6 @@ import com.matyrobbrt.codecutils.impl.types.DefaultCTAFs;
 import com.matyrobbrt.codecutils.invoke.Reflection;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.Level;
@@ -30,9 +29,9 @@ public class MinecraftConfigurator implements CodecCreatorConfigurator {
         FoundCodecs.apply(configuration);
 
         configuration.withAdapterFactory(new CodecTypeAdapter.Factory() {
-            @SuppressWarnings("unchecked")
             @Nullable
             @Override
+            @SuppressWarnings("unchecked")
             public <T> CodecTypeAdapter<T> create(CodecCreator creator, TypeToken<T> type) {
                 if (!Enum.class.isAssignableFrom(type.getRawType()) && !StringRepresentable.class.isAssignableFrom(type.getRawType())) return null;
                 return (CodecTypeAdapter<T>) DefaultCTAFs.<Object, StringRepresentable>adapter(type.getRawType().getEnumConstants(), StringRepresentable.class, StringRepresentable::getSerializedName);
@@ -62,7 +61,7 @@ public class MinecraftConfigurator implements CodecCreatorConfigurator {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private void setupRegistries(CodecCreatorConfiguration config) {
-        Arrays.stream(BuiltInRegistries.class.getDeclaredFields())
+        Arrays.stream(Registry.class.getDeclaredFields())
                 .filter(it -> Modifier.isStatic(it.getModifiers()) && Registry.class.isAssignableFrom(it.getType()))
                 .forEach(field -> {
                     final Registry<?> registry = Reflection.getStatic(field);
