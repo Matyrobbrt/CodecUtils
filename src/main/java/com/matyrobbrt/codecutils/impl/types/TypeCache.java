@@ -3,6 +3,7 @@ package com.matyrobbrt.codecutils.impl.types;
 import com.google.gson.reflect.TypeToken;
 import com.matyrobbrt.codecutils.api.CodecCreator;
 import com.matyrobbrt.codecutils.api.CodecTypeAdapter;
+import com.matyrobbrt.codecutils.api.exception.CannotCreateAdapter;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import org.jetbrains.annotations.Nullable;
 
@@ -50,7 +51,7 @@ public class TypeCache {
             }
 
             cachedAdapters.remove(type);
-            throw new IllegalArgumentException("Cannot create adapter for object of type: " + type);
+            throw new CannotCreateAdapter(type);
         }
         return (CodecTypeAdapter<T>) cached;
     }

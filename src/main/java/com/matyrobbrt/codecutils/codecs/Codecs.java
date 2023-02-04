@@ -10,6 +10,12 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class Codecs {
+    @SuppressWarnings("rawtypes")
+    public static final Function SUCCESS = success();
+    public static <T> Function<T, DataResult<T>> success() {
+        return DataResult::success;
+    }
+
     public static <T> Function<T, DataResult<T>> verifier(Predicate<T> verifier, Function<T, String> message) {
         return t -> verifier.test(t) ? DataResult.success(t) : DataResult.error(message.apply(t));
     }

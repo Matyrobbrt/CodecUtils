@@ -12,10 +12,12 @@ import com.matyrobbrt.codecutils.api.annotation.DefaultValueFor;
 import com.matyrobbrt.codecutils.api.annotation.OrEmpty;
 import com.matyrobbrt.codecutils.api.annotation.Range;
 import com.matyrobbrt.codecutils.api.annotation.SingleOrList;
+import com.matyrobbrt.codecutils.api.annotation.ValidateWith;
 import com.matyrobbrt.codecutils.api.annotation.WithAdapter;
 import com.matyrobbrt.codecutils.codecs.Codecs;
 import com.matyrobbrt.codecutils.invoke.Reflection;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 
 import javax.annotation.Nullable;
 import java.lang.invoke.MethodType;
@@ -148,6 +150,14 @@ public record FieldDataResolvers(
                     );
                     typeAdapter = typeAdapter.map(ad -> ad.flatXmap(test, test));
                 }
+            }
+
+            final ValidateWith validateWith = element.getAnnotation(ValidateWith.class);
+            if (validateWith != null) {
+                final ValidateWith.Validator validator = Reflection.createInstance(validateWith.value().getDeclaredConstructor());
+                final Function verifier = Codecs.verifier(validator, validator::getMessage);
+                final Function success = Codecs.SUCCESS;
+                typeAdapter = typeAdapter.map(ad -> ad.flatXmap(validateWith.whenDeserializing() ? verifier : success, validateWith.whenSerializing() ? verifier : success));
             }
         }
 

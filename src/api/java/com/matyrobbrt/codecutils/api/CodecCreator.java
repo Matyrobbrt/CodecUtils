@@ -35,6 +35,7 @@ public interface CodecCreator {
      * @param type the type to get the adapter for
      * @param <T>  the adapter type
      * @return the adapter
+     * @throws com.matyrobbrt.codecutils.api.exception.CannotCreateAdapter if an adapter for the specified type cannot not be created by the creator
      */
     <T> CodecTypeAdapter<T> getAdapter(TypeToken<T> type);
 
@@ -44,6 +45,7 @@ public interface CodecCreator {
      * @param clazz the type to get the adapter for
      * @param <T>   the adapter type
      * @return the adapter
+     * @throws com.matyrobbrt.codecutils.api.exception.CannotCreateAdapter if an adapter for the specified type cannot not be created by the creator
      */
     default <T> CodecTypeAdapter<T> getAdapter(Class<T> clazz) {
         return getAdapter(TypeToken.get(clazz));
@@ -55,6 +57,7 @@ public interface CodecCreator {
      * @param clazz the type to get the codec for
      * @param <T>   the codec type
      * @return the codec
+     * @throws com.matyrobbrt.codecutils.api.exception.CannotCreateAdapter if an adapter for the specified type cannot not be created by the creator
      */
     default <T> Codec<T> getCodec(Class<T> clazz) {
         return getAdapter(clazz).asCodec();
@@ -66,6 +69,7 @@ public interface CodecCreator {
      * @param type the type to get the codec for
      * @param <T>  the codec type
      * @return the codec
+     * @throws com.matyrobbrt.codecutils.api.exception.CannotCreateAdapter if an adapter for the specified type cannot not be created by the creator
      */
     default <T> Codec<T> getCodec(TypeToken<T> type) {
         return getAdapter(type).asCodec();
