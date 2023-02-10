@@ -166,7 +166,7 @@ subprojects { Project proj ->
     repositories {
       maven {
         name = 'Matyrobbrt'
-        url = 'https://maven.matyrobbrt.com/releases'
+        url = "https://maven.matyrobbrt.com/$release"
         credentials {
           username = findProperty('matyrobbrtMavenUser') ? matyrobbrtMavenUser : ''
           password = findProperty('matyrobbrtMavenPassword') ? matyrobbrtMavenPassword : ''
@@ -203,7 +203,7 @@ publishing {
   repositories {
     maven {
       name = 'Matyrobbrt'
-      url = 'https://maven.matyrobbrt.com/releases'
+      url = "https://maven.matyrobbrt.com/$release"
       credentials {
         username = findProperty('matyrobbrtMavenUser') ? matyrobbrtMavenUser : ''
         password = findProperty('matyrobbrtMavenPassword') ? matyrobbrtMavenPassword : ''
@@ -220,7 +220,7 @@ publishing {
 
 void configurePom(MavenPom pom) {
   pom.name = 'CodecUtils'
-  pom.description = 'A Minecraft vanilla-styled chunk claiming mod.'
+  pom.description = 'A library used for codec-related utilities.'
   pom.url = 'https://github.com/Matyrobbrt/CodecUtils'
   pom.licenses {
     license {

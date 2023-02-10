@@ -54,7 +54,7 @@ public record FieldDataResolvers(
     private static final Map<Class<?>, Ranged<?>> RANGED_TYPES = new HashMap<>();
     private static final Map<Class<?>, Function<DefaultValue, ?>> DEFAULT_VALUES = new HashMap<>();
     static final Set<Class<?>> PRIMITIVE_TYPES = Set.of(
-            int.class, byte.class, char.class, double.class, float.class, long.class, short.class
+            int.class, byte.class, char.class, double.class, float.class, long.class, short.class, boolean.class
     );
     static final Map<Class<?>, Object> PRIMITIVE_DEFAULTS = Map.of(
             int.class, 0,
@@ -62,8 +62,9 @@ public record FieldDataResolvers(
             char.class, (char) 0,
             double.class, 0d,
             float.class, 0f,
-            long.class, 0l,
-            short.class, (short) 0
+            long.class, 0L,
+            short.class, (short) 0,
+            boolean.class, false
     );
 
     static {
@@ -76,6 +77,7 @@ public record FieldDataResolvers(
         addRange(Range::shortMin, Range::shortMax, Short.class, short.class);
 
         addDefault(DefaultValue::stringValue, String.class);
+        addDefault(DefaultValue::booleanValue, Boolean.class, boolean.class);
         addDefault(DefaultValue::intValue, Integer.class, int.class);
         addDefault(DefaultValue::byteValue, Byte.class, byte.class);
         addDefault(DefaultValue::charValue, Character.class, char.class);

@@ -33,4 +33,6 @@ public @interface DefaultValue {
     short shortValue() default 0;
 
     String stringValue() default "yeet";
+
+    boolean booleanValue() default false;
 }
